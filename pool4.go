@@ -61,15 +61,17 @@ func NewPool4(network string) (*Pool4, error) {
 }
 
 func (p *Pool4) NextIP() (byte, byte, byte, byte) {
-	counter := atomic.LoadUint32(&p.counter)
+	counter := p.counter
+	for !atomic.CompareAndSwapUint32(&p.counter, counter, counter+1) {
+		counter = p.counter
+	}
+
 	hostHalf := counter & p.maskHostBits
 
 	octet0 := byte((p.network | (hostHalf & mask24)) >> 24)
 	octet1 := byte((p.network | (hostHalf & mask16)) >> 16)
 	octet2 := byte((p.network | (hostHalf & mask8)) >> 8)
 	octet3 := byte((p.network | (hostHalf & mask0)) >> 0)
-
-	atomic.AddUint32(&p.counter, 1)
 
 	return octet0, octet1, octet2, octet3
 }

@@ -3,7 +3,6 @@ package ippool
 import (
 	"errors"
 	"net"
-	"sync/atomic"
 	"testing"
 )
 
@@ -128,7 +127,7 @@ func TestNextIP(t *testing.T) {
 			network:     "10.0.0.0/24",
 			wantIP:      net.IPv4(10, 0, 0, 0),
 			runBefore: func(p *Pool4) {
-				atomic.StoreUint32(&p.counter, 255)
+				p.counter = 255
 				p.NextIP()
 			},
 		},
@@ -138,10 +137,12 @@ func TestNextIP(t *testing.T) {
 			wantIP:      net.IPv4(10, 0, 0, 1),
 		},
 		{
-			description: "no_host_bits_with_wrap_around",
-			network:     "10.0.0.1/32",
-			wantIP:      net.IPv4(10, 0, 0, 1),
+			description: "flip_all_octets",
+			network:     "10.0.0.0/1",
+			wantIP:      net.IPv4(11, 0, 0, 1),
 			runBefore: func(p *Pool4) {
+				p.counter = 184549375 // 10.255.255.255
+				p.NextIP()
 				p.NextIP()
 			},
 		},
