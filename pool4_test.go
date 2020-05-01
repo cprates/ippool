@@ -168,3 +168,20 @@ func TestNextIP(t *testing.T) {
 		)
 	}
 }
+
+var sincOctet0, sincOctet1, sincOctet2, sincOctet3 byte
+
+func BenchmarkPool4(b *testing.B) {
+	pool, err := NewPool4("10.0.0.0/24")
+
+	var o0, o1, o2, o3 byte
+	for n := 0; n < b.N; n++ {
+		if err != nil {
+			b.Errorf("doesn't want error but got %s", err)
+		}
+
+		o0, o1, o2, o3 = pool.NextIP()
+	}
+
+	sincOctet0, sincOctet1, sincOctet2, sincOctet3 = o0, o1, o2, o3
+}
