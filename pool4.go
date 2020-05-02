@@ -24,9 +24,13 @@ func New(network string) (*Dhcpc, error) {
 		return nil, err
 	}
 
+	pool := map[uint32]struct{}{}
+	pool[genIP4.network] = struct{}{}
+	pool[genIP4.broadcast] = struct{}{}
+
 	return &Dhcpc{
 		genIP4:  genIP4,
-		pool4:   map[uint32]struct{}{},
+		pool4:   pool,
 		mu4:     sync.Mutex{},
 		Network: ipNet,
 	}, nil

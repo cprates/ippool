@@ -19,6 +19,7 @@ type GenIP4 struct {
 	maskHostBits uint32
 	counter      uint32
 	network      uint32
+	broadcast    uint32
 }
 
 // NewGenIP4 creates a new IPv4 address's generator for the given CIDR network, returning an
@@ -53,9 +54,11 @@ func NewGenIP4(network string) (*GenIP4, error) {
 
 	// invert mask
 	maskHostBits := uint32(0xFFFFFFFF >> maskbits)
+	ipNetwork := uint32(octets[0]<<24|octets[1]<<16|octets[2]<<8|octets[3]<<0) & ^maskHostBits
 	gen := GenIP4{
 		maskHostBits: maskHostBits,
-		network:      uint32(octets[0]<<24|octets[1]<<16|octets[2]<<8|octets[3]<<0) & ^maskHostBits,
+		network:      ipNetwork,
+		broadcast:    maskHostBits | ipNetwork,
 	}
 
 	return &gen, nil

@@ -6,17 +6,17 @@ import (
 )
 
 func TestIPv4Sequence(t *testing.T) {
+	wantIPs := make([]net.IP, 254)
+	for i := 1; i < len(wantIPs); i++ {
+		wantIPs[i] = net.IP{10, 0, 0, byte(i)}
+	}
+
 	dhcpc, err := New("10.0.0.0/16")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	wantIPs := make([]net.IP, 256)
-	for i := 0; i < len(wantIPs); i++ {
-		wantIPs[i] = net.IP{10, 0, 0, byte(i)}
-	}
-
-	for i := 0; i < len(wantIPs); i++ {
+	for i := 1; i < len(wantIPs); i++ {
 		ip := dhcpc.IPv4()
 		if !wantIPs[i].Equal(ip) {
 			t.Fatalf("want ip %q got %q", wantIPs[i], ip)
@@ -30,7 +30,7 @@ func TestIPv4ExhaustedPool4(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for i := 0; i < 65536; i++ {
+	for i := 0; i < 65534; i++ {
 		ip := dhcpc.IPv4()
 		if ip == nil {
 			t.Fatalf("want next IP but got nil at iteration %d", i)
@@ -82,20 +82,20 @@ func TestIPv4Release(t *testing.T) {
 	}
 
 	ip0 := dhcpc.IPv4()
-	if ip0.String() != "10.0.0.0" {
+	if ip0.String() != "10.0.0.1" {
 		t.Fatalf("unexpected ip %s", ip0)
 	}
 
 	dhcpc.genIP4.counter = 0
 	ip1 := dhcpc.IPv4()
-	if ip1.String() != "10.0.0.1" {
+	if ip1.String() != "10.0.0.2" {
 		t.Fatalf("unexpected ip %s", ip1)
 	}
 
 	dhcpc.Release4(ip0)
 	dhcpc.genIP4.counter = 0
 	ip0 = dhcpc.IPv4()
-	if ip0.String() != "10.0.0.0" {
+	if ip0.String() != "10.0.0.1" {
 		t.Fatalf("unexpected ip %s", ip1)
 	}
 }
