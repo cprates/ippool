@@ -82,7 +82,7 @@ func TestPool4(t *testing.T) {
 	for _, test := range testsSet {
 		t.Run(test.description,
 			func(t *testing.T) {
-				pool, err := NewPool4(test.network)
+				pool, err := NewGenIP4(test.network)
 				if test.wantErr != nil {
 					if err == nil {
 						t.Errorf("want error %q but got nil", test.wantErr)
@@ -115,7 +115,7 @@ func TestNextIP(t *testing.T) {
 		description string
 		network     string
 		wantIP      net.IP
-		runBefore   func(*Pool4)
+		runBefore   func(ip4 *GenIP4)
 	}{
 		{
 			description: "first_network_ip",
@@ -126,7 +126,7 @@ func TestNextIP(t *testing.T) {
 			description: "last_network_ip",
 			network:     "10.0.0.0/24",
 			wantIP:      net.IPv4(10, 0, 0, 0),
-			runBefore: func(p *Pool4) {
+			runBefore: func(p *GenIP4) {
 				p.counter = 255
 				p.NextIP()
 			},
@@ -140,7 +140,7 @@ func TestNextIP(t *testing.T) {
 			description: "flip_all_octets",
 			network:     "10.0.0.0/1",
 			wantIP:      net.IPv4(11, 0, 0, 1),
-			runBefore: func(p *Pool4) {
+			runBefore: func(p *GenIP4) {
 				p.counter = 184549375 // 10.255.255.255
 				p.NextIP()
 				p.NextIP()
@@ -151,7 +151,7 @@ func TestNextIP(t *testing.T) {
 	for _, test := range testsSet {
 		t.Run(test.description,
 			func(t *testing.T) {
-				pool, err := NewPool4(test.network)
+				pool, err := NewGenIP4(test.network)
 				if err != nil {
 					t.Errorf("doesn't want error but got %s", err)
 				}
@@ -171,8 +171,8 @@ func TestNextIP(t *testing.T) {
 
 var sincOctet0, sincOctet1, sincOctet2, sincOctet3 byte
 
-func BenchmarkPool4(b *testing.B) {
-	pool, err := NewPool4("10.0.0.0/24")
+func BenchmarkGenIP4(b *testing.B) {
+	pool, err := NewGenIP4("10.0.0.0/24")
 
 	var o0, o1, o2, o3 byte
 	for n := 0; n < b.N; n++ {

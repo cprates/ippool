@@ -14,15 +14,16 @@ const (
 	mask0  = uint32(0xFF)
 )
 
-type Pool4 struct {
+// GenIP4 is a sequential IPv4 generator.
+type GenIP4 struct {
 	maskHostBits uint32
 	counter      uint32
 	network      uint32
 }
 
-// NewPool4 creates a new pool of IPv4 addresses for the given CIDR network, returning an
+// NewGenIP4 creates a new IPv4 address's generator for the given CIDR network, returning an
 // error if it's not in the right format or is invalid.
-func NewPool4(network string) (*Pool4, error) {
+func NewGenIP4(network string) (*GenIP4, error) {
 	parts := strings.Split(network, "/")
 	if len(parts) != 2 {
 		return nil, errors.New("invalid CIDR network")
@@ -52,15 +53,15 @@ func NewPool4(network string) (*Pool4, error) {
 
 	// invert mask
 	maskHostBits := uint32(0xFFFFFFFF >> maskbits)
-	pool := Pool4{
+	gen := GenIP4{
 		maskHostBits: maskHostBits,
 		network:      uint32(octets[0]<<24|octets[1]<<16|octets[2]<<8|octets[3]<<0) & ^maskHostBits,
 	}
 
-	return &pool, nil
+	return &gen, nil
 }
 
-func (p *Pool4) NextIP() (byte, byte, byte, byte) {
+func (p *GenIP4) NextIP() (byte, byte, byte, byte) {
 	counter := p.counter
 	for !atomic.CompareAndSwapUint32(&p.counter, counter, counter+1) {
 		counter = p.counter
